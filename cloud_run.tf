@@ -40,6 +40,33 @@ resource "google_storage_bucket_iam_policy" "data" {
   policy_data = data.google_iam_policy.data.policy_data
 }
 
+resource "google_secret_manager_secret" "private_key" {
+  secret_id = "pocket-id-private-key"
+  project   = google_project.this.project_id
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_iam_member" "private_key" {
+  project   = google_project_service.secretmanager.project
+  secret_id = google_secret_manager_secret.private_key.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.run.email}"
+}
+
+locals {
+  jwt_private_key_file = "${path.module}/jwt_private_key.json"
+}
+
+resource "google_secret_manager_secret_version" "private_key" {
+  secret = google_secret_manager_secret_iam_member.private_key.secret_id
+
+  # It seems like if there are no versions, some attributes are null
+  # hopefully this actually works
+  secret_data_wo = fileexists(local.jwt_private_key_file) || google_secret_manager_secret.private_key.version_aliases == null ? file(local.jwt_private_key_file) : ""
+}
+
 resource "google_cloud_run_v2_service" "this" {
   # for default_uri_disabled
   provider = google-beta
@@ -63,19 +90,24 @@ resource "google_cloud_run_v2_service" "this" {
     }
 
     containers {
+      name  = "pocket-id"
       image = "${local.registry_uri}/pocket-id/pocket-id:development"
       ports {
         container_port = 8080
       }
       resources {
         limits = {
-          cpu    = "1"
+          cpu    = "1000m"
           memory = "512Mi"
         }
       }
       env {
         name  = "APP_URL"
         value = "https://${local.issuer_fqdn}"
+      }
+      env {
+        name  = "KEYS_PATH"
+        value = "/app/keys"
       }
       dynamic "env" {
         for_each = var.pocket-id_env
@@ -87,6 +119,10 @@ resource "google_cloud_run_v2_service" "this" {
       volume_mounts {
         name       = "data"
         mount_path = "/app/data"
+      }
+      volume_mounts {
+        name       = "private_key"
+        mount_path = "/app/keys"
       }
 
       # These values are pretty arbitrary
@@ -117,6 +153,16 @@ resource "google_cloud_run_v2_service" "this" {
       name = "data"
       gcs {
         bucket = google_storage_bucket.data.name
+      }
+    }
+    volumes {
+      name = "private_key"
+      secret {
+        secret = google_secret_manager_secret_version.private_key.secret
+        items {
+          path    = "jwt_private_key.json"
+          version = "latest"
+        }
       }
     }
   }

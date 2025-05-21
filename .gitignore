@@ -2,3 +2,4 @@
 /.terraform
 /terraform.tfstate*
 /*.tfvars
+/jwt_private_key.json
