@@ -131,7 +131,7 @@ resource "google_compute_url_map" "this" {
       error_service = google_compute_backend_bucket.static.id
     }
 
-    // This is necessary to avoid the "AccessDenied" weird bucket exceptions
+    # This is necessary to avoid the "AccessDenied" weird bucket exceptions
     default_route_action {
       url_rewrite {
         path_prefix_rewrite = "/this-doesn't-exist"

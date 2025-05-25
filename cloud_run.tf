@@ -110,7 +110,7 @@ resource "google_cloud_run_v2_service" "this" {
         value = "/app/keys"
       }
       dynamic "env" {
-        for_each = var.pocket-id_env
+        for_each = var.additional_env
         content {
           name  = env.key
           value = env.value

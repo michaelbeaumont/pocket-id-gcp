@@ -8,7 +8,7 @@ data "cloudflare_zone" "this" {
   }
 }
 
-resource "cloudflare_dns_record" "load-balancer-ipv4-id" {
+resource "cloudflare_dns_record" "load_balancer_ipv4_id" {
   zone_id = data.cloudflare_zone.this.zone_id
   name    = local.issuer_fqdn
   content = google_compute_global_forwarding_rule.ipv4.ip_address
@@ -17,7 +17,7 @@ resource "cloudflare_dns_record" "load-balancer-ipv4-id" {
   comment = "Pocket ID GCP load balancer"
 }
 
-resource "cloudflare_dns_record" "load-balancer-ipv6-id" {
+resource "cloudflare_dns_record" "load_balancer_ipv6_id" {
   zone_id = data.cloudflare_zone.this.zone_id
   name    = local.issuer_fqdn
   content = google_compute_global_forwarding_rule.ipv6.ip_address
@@ -26,7 +26,7 @@ resource "cloudflare_dns_record" "load-balancer-ipv6-id" {
   comment = "Pocket ID GCP load balancer"
 }
 
-resource "cloudflare_dns_record" "load-balancer-ipv4-account" {
+resource "cloudflare_dns_record" "load_balancer_ipv4_account" {
   zone_id = data.cloudflare_zone.this.zone_id
   name    = local.account_fqdn
   content = google_compute_global_forwarding_rule.ipv4.ip_address
@@ -35,7 +35,7 @@ resource "cloudflare_dns_record" "load-balancer-ipv4-account" {
   comment = "Pocket ID GCP load balancer"
 }
 
-resource "cloudflare_dns_record" "load-balancer-ipv6-account" {
+resource "cloudflare_dns_record" "load_balancer_ipv6_account" {
   zone_id = data.cloudflare_zone.this.zone_id
   name    = local.account_fqdn
   content = google_compute_global_forwarding_rule.ipv6.ip_address
