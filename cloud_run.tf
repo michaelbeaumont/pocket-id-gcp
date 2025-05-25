@@ -91,7 +91,7 @@ resource "google_cloud_run_v2_service" "this" {
 
     containers {
       name  = "pocket-id"
-      image = "${local.registry_uri}/pocket-id/pocket-id:development"
+      image = "${local.registry_uri}/pocket-id/pocket-id:v1.0.0"
       ports {
         container_port = 8080
       }
