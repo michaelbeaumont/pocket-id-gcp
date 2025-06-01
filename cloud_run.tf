@@ -91,7 +91,7 @@ resource "google_cloud_run_v2_service" "this" {
 
     containers {
       name  = "pocket-id"
-      image = "${local.registry_uri}/pocket-id/pocket-id:v1.0.0"
+      image = "${local.registry_uri}/pocket-id/pocket-id:v1.1.0"
       ports {
         container_port = 8080
       }
@@ -108,6 +108,10 @@ resource "google_cloud_run_v2_service" "this" {
       env {
         name  = "KEYS_PATH"
         value = "/app/keys"
+      }
+      env {
+        name  = "ANALYTICS_DISABLED"
+        value = "true"
       }
       dynamic "env" {
         for_each = var.additional_env
