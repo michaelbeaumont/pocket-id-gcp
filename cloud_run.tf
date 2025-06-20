@@ -77,7 +77,7 @@ resource "google_cloud_run_v2_service" "this" {
   location            = var.region
   deletion_protection = false
 
-  ingress              = "INGRESS_TRAFFIC_ALL"
+  ingress              = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
   invoker_iam_disabled = true
 
   default_uri_disabled = true
