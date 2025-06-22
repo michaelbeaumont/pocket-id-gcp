@@ -5,5 +5,16 @@
   ],
   "terraform": {
     "fileMatch": ["\\.tf$"],
-  }
+  },
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: ['*.tf'],
+      matchStrings: [
+        'pocket_id_version = "v(?<currentValue>.*?)"',
+      ],
+      depNameTemplate: 'pocket-id/pocket-id',
+      datasourceTemplate: 'github-releases',
+    },
+  ],
 }

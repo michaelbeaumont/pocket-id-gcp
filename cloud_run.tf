@@ -67,6 +67,10 @@ resource "google_secret_manager_secret_version" "private_key" {
   secret_data_wo = fileexists(local.jwt_private_key_file) || google_secret_manager_secret.private_key.version_aliases == null ? file(local.jwt_private_key_file) : ""
 }
 
+locals {
+  pocket_id_version = "v1.4.0"
+}
+
 resource "google_cloud_run_v2_service" "this" {
   # for default_uri_disabled
   provider = google-beta
@@ -91,7 +95,7 @@ resource "google_cloud_run_v2_service" "this" {
 
     containers {
       name  = "pocket-id"
-      image = "${local.registry_uri}/pocket-id/pocket-id:v1.4.0"
+      image = "${local.registry_uri}/pocket-id/pocket-id:${local.pocket_id_version}"
       ports {
         container_port = 8080
       }
