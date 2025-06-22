@@ -5,5 +5,16 @@
   ],
   "terraform": {
     "fileMatch": ["\\.tf$"],
-  }
+  },
+  customManagers: [
+    {
+      customType: 'regex',
+      managerFilePatterns: ['*.tf'],
+      matchStrings: [
+        'image = "${local.registry_uri}/pocket-id/pocket-id:v(?<currentValue>.*?)"\\n'
+      ],
+      depNameTemplate: 'pocket-id',
+      datasourceTemplate: 'docker',
+    },
+  ],
 }
