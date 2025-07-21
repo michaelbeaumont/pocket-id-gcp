@@ -11,7 +11,7 @@
       customType: 'regex',
       managerFilePatterns: ['*.tf'],
       matchStrings: [
-        'pocket_id_version = "v(?<currentValue>.*?)"',
+        'pocket_id_version = "(?<currentValue>.*?)-distroless"',
       ],
       depNameTemplate: 'pocket-id/pocket-id',
       datasourceTemplate: 'github-releases',
