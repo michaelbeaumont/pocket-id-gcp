@@ -68,7 +68,7 @@ resource "google_secret_manager_secret_version" "private_key" {
 }
 
 locals {
-  pocket_id_version = "vv1.6.2"
+  pocket_id_version = "vv1.6.4"
 }
 
 resource "google_cloud_run_v2_service" "this" {
