@@ -1,15 +1,19 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:recommended",
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
   ],
-  "terraform": {
-    "fileMatch": ["\\.tf$"],
+  terraform: {
+    managerFilePatterns: [
+      '/\\.tf$/',
+    ],
   },
   customManagers: [
     {
       customType: 'regex',
-      managerFilePatterns: ['*.tf'],
+      managerFilePatterns: [
+        '*.tf',
+      ],
       matchStrings: [
         'pocket_id_version = "(?<currentValue>.*?)-distroless"',
       ],
