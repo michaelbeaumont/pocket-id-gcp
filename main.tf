@@ -11,7 +11,7 @@ terraform {
     }
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = "~> 6.36"
+      version = "~> 7.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
