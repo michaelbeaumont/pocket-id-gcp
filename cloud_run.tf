@@ -64,7 +64,8 @@ resource "google_secret_manager_secret_version" "private_key" {
 
   # It seems like if there are no versions, some attributes are null
   # hopefully this actually works
-  secret_data_wo = fileexists(local.jwt_private_key_file) || google_secret_manager_secret.private_key.version_aliases == null ? file(local.jwt_private_key_file) : ""
+  secret_data_wo         = fileexists(local.jwt_private_key_file) || google_secret_manager_secret.private_key.version_aliases == null ? file(local.jwt_private_key_file) : ""
+  secret_data_wo_version = 0
 }
 
 locals {

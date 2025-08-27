@@ -56,21 +56,24 @@ resource "google_secret_manager_secret_iam_policy" "repository_password" {
 }
 
 resource "google_secret_manager_secret_version" "backblaze_key_id" {
-  depends_on     = [google_secret_manager_secret_iam_policy.backblaze_key_id]
-  secret         = google_secret_manager_secret.backblaze_key_id.id
-  secret_data_wo = var.backblaze_key_id
+  depends_on             = [google_secret_manager_secret_iam_policy.backblaze_key_id]
+  secret                 = google_secret_manager_secret.backblaze_key_id.id
+  secret_data_wo         = var.backblaze_key_id
+  secret_data_wo_version = 0
 }
 
 resource "google_secret_manager_secret_version" "backblaze_key" {
-  depends_on     = [google_secret_manager_secret_iam_policy.backblaze_key]
-  secret         = google_secret_manager_secret.backblaze_key.id
-  secret_data_wo = var.backblaze_key
+  depends_on             = [google_secret_manager_secret_iam_policy.backblaze_key]
+  secret                 = google_secret_manager_secret.backblaze_key.id
+  secret_data_wo         = var.backblaze_key
+  secret_data_wo_version = 0
 }
 
 resource "google_secret_manager_secret_version" "repository_password" {
-  depends_on     = [google_secret_manager_secret_iam_policy.repository_password]
-  secret         = google_secret_manager_secret.repository_password.id
-  secret_data_wo = var.backblaze_repository_password
+  depends_on             = [google_secret_manager_secret_iam_policy.repository_password]
+  secret                 = google_secret_manager_secret.repository_password.id
+  secret_data_wo         = var.backblaze_repository_password
+  secret_data_wo_version = 0
 }
 
 resource "google_cloud_run_v2_job" "backup" {
