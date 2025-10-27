@@ -89,3 +89,23 @@ variable "additional_env" {
   description = "Additional env variables for pocket-id"
   default     = {}
 }
+
+variable "tailscale_authkey" {
+  type        = string
+  description = "Authkey for tailscale sidecar"
+  nullable    = false
+  #ephemeral   = true
+  sensitive = true
+}
+
+variable "gcp_token_audience" {
+  type        = string
+  description = "Audience to generate a GCP token for"
+  nullable    = false
+}
+
+variable "tailscale_client_id" {
+  type        = string
+  description = "Client ID for starting tailscale"
+  nullable    = false
+}

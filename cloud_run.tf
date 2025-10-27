@@ -68,6 +68,33 @@ resource "google_secret_manager_secret_version" "private_key" {
   secret_data_wo_version = 0
 }
 
+resource "google_secret_manager_secret" "issuer_ca" {
+  secret_id = "pocket-id-issuer-ca"
+  project   = google_project.this.project_id
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_iam_member" "issuer_ca" {
+  project   = google_project_service.secretmanager.project
+  secret_id = google_secret_manager_secret.issuer_ca.secret_id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.run.email}"
+}
+
+locals {
+  issuer_ca_file = "${path.module}/issuer_ca.pem"
+}
+
+resource "google_secret_manager_secret_version" "issuer_ca" {
+  secret = google_secret_manager_secret_iam_member.issuer_ca.secret_id
+
+  # It seems like if there are no versions, some attributes are null
+  # hopefully this actually works
+  secret_data_wo         = fileexists(local.issuer_ca_file) || google_secret_manager_secret.issuer_ca.version_aliases == null ? file(local.issuer_ca_file) : ""
+  secret_data_wo_version = 0
+}
 locals {
   pocket_id_version = "v2.9.0-distroless"
 }
@@ -96,6 +123,7 @@ resource "google_cloud_run_v2_service" "this" {
 
     containers {
       name  = "pocket-id"
+      depends_on = ["tailscale"]
       image = "${local.registry_uri}/pocket-id/pocket-id:${local.pocket_id_version}"
       ports {
         container_port = 8080
@@ -135,6 +163,10 @@ resource "google_cloud_run_v2_service" "this" {
         name       = "data"
         mount_path = "/app/data"
       }
+      volume_mounts {
+        name       = "issuer_ca"
+        mount_path = "/etc/ssl/certs"
+      }
 
       # These values are pretty arbitrary
       # And it might not be enough for the first run with GCS
@@ -149,7 +181,7 @@ resource "google_cloud_run_v2_service" "this" {
         }
       }
       liveness_probe {
-        failure_threshold     = 2
+        failure_threshold     = 10
         initial_delay_seconds = 0
         timeout_seconds       = 5
         period_seconds        = 90
@@ -160,11 +192,93 @@ resource "google_cloud_run_v2_service" "this" {
       }
     }
 
+    containers {
+      name  = "tailscale"
+      image = "docker.io/tailscale/tailscale:stable"
+      /*command = [
+        "sh", "-c",
+        <<EOT
+          wget --header "Metadata-Flavor: Google" "http://metadata/computeMetadata/v1/instance/service-accounts/default/identity?audience=${var.gcp_token_audience}" -O /var/run/id-token/token
+          /usr/local/bin/containerboot
+        EOT
+      ]*/
+      resources {
+        cpu_idle = true
+      }
+      env {
+        name  = "PATH"
+        value = "/bin:/usr/bin:/usr/local/bin"
+      }
+      env {
+        name  = "TS_HOSTNAME"
+        value = "pocket-id-proxy"
+      }
+      env {
+        name  = "TS_SOCKS5_SERVER"
+        value = "localhost:1055"
+      }
+      env {
+        name = "TS_ENABLE_HEALTH_CHECK"
+        value = "true"
+      }
+      env {
+        name  = "TS_EXTRA_ARGS"
+        #value = "--client-id ${var.tailscale_client_id}?ephemeral=true --id-token=file:/var/run/id-token/token --advertise-tags=tag:pocket-id"
+        value = "--auth-key ${var.tailscale_authkey} --advertise-tags=tag:pocket-id"
+      }
+
+      /*volume_mounts {
+        name       = "id-token"
+        mount_path = "/var/run/id-token"
+      }*/
+      # These values are pretty arbitrary
+      # And it might not be enough for the first run with GCS
+      startup_probe {
+        failure_threshold     = 10
+        initial_delay_seconds = 5
+        timeout_seconds       = 5
+        period_seconds        = 10
+
+        http_get {
+          path = "/healthz"
+          port = "9002"
+        }
+      }
+      liveness_probe {
+        failure_threshold     = 10
+        initial_delay_seconds = 0
+        timeout_seconds       = 5
+        period_seconds        = 90
+
+        http_get {
+          path = "/healthz"
+          port = "9002"
+        }
+      }
+    }
+
     volumes {
       name = "data"
       gcs {
         bucket = google_storage_bucket.data.name
       }
     }
+    volumes {
+      name = "issuer_ca"
+      secret {
+        secret = google_secret_manager_secret_version.issuer_ca.secret
+        items {
+          path    = "issuer_ca.pem"
+          version = "latest"
+        }
+      }
+    }
+    /*volumes {
+      name = "id-token"
+      empty_dir {
+        medium = "MEMORY"
+        size_limit = "10Mi"
+      }
+    }*/
   }
 }
