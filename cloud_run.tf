@@ -69,7 +69,7 @@ resource "google_secret_manager_secret_version" "private_key" {
 }
 
 locals {
-  pocket_id_version = "v1.15.0-distroless"
+  pocket_id_version = "v1.16.0-distroless"
 }
 
 resource "google_cloud_run_v2_service" "this" {
