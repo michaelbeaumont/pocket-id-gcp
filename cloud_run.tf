@@ -112,8 +112,13 @@ resource "google_cloud_run_v2_service" "this" {
         value = "https://${local.issuer_fqdn}"
       }
       env {
-        name  = "KEYS_PATH"
-        value = "/app/keys"
+        name  = "ENCRYPTION_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.private_key.secret_id
+            version = "latest"
+          }
+        }
       }
       env {
         name  = "ANALYTICS_DISABLED"
@@ -129,10 +134,6 @@ resource "google_cloud_run_v2_service" "this" {
       volume_mounts {
         name       = "data"
         mount_path = "/app/data"
-      }
-      volume_mounts {
-        name       = "private_key"
-        mount_path = "/app/keys"
       }
 
       # These values are pretty arbitrary
@@ -163,16 +164,6 @@ resource "google_cloud_run_v2_service" "this" {
       name = "data"
       gcs {
         bucket = google_storage_bucket.data.name
-      }
-    }
-    volumes {
-      name = "private_key"
-      secret {
-        secret = google_secret_manager_secret_version.private_key.secret
-        items {
-          path    = "jwt_private_key.json"
-          version = "latest"
-        }
       }
     }
   }
