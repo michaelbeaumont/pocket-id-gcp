@@ -1,5 +1,8 @@
 # `pocket-id` on GCP
 
+> [!NOTE]
+> I'm no longer running this on GCP
+
 This is a terraform configuration to fully automatically provision and run `pocket-id`
 on GCP and Cloudflare as well as periodically backup to Backblaze. It also
 serves a webfinger document that some OIDC RPs require.
